@@ -3,19 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="/public/style.css">
   <title>Consulta de CEP</title>
 </head>
 <body>
   <div class="container">
     <h1>Consulta de CEP</h1>
     <form id="cepForm">
-      <input type="text" id="cep" placeholder="Digite o CEP" maxlength="8">
+      <input type="text" id="cep" placeholder="Digite o CEP (apenas números)" maxlength="8">
       <button type="submit">Consultar</button>
     </form>
     <div id="resultado"></div>
   </div>
   <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places"></script>
-  <script src="script.js"></script>
+  <script src="/public/script.js"></script>
 </body>
 </html>
