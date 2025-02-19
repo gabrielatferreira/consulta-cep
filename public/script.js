@@ -3,35 +3,58 @@ document.addEventListener("DOMContentLoaded", () => {
     const cepInput = document.getElementById("cep");
     const resultadoDiv = document.getElementById("resultado");
     const cache = new Map();
+    let buscandoCep = false;
+
+    cepInput.setAttribute("autocomplete", "off");
 
     form.addEventListener("submit", async function (e) {
         e.preventDefault();
+
+        if (buscandoCep) return;
+        buscandoCep = true;
         
         const cep = cepInput.value.trim();
         resultadoDiv.innerHTML = "";
 
         if (!/^\d{8}$/.test(cep)) {
-            resultadoDiv.innerHTML = `<p class="error-msg">Por favor, insira um CEP válido (8 dígitos).</p>`;
+            resultadoDiv.textContent = "Por favor, insira um CEP válido (8 dígitos numéricos).";
+            resultadoDiv.classList.add("error-msg");
+            buscandoCep = false;
             return;
         }
 
         if (cache.has(cep)) {
-            return exibirResultado(cache.get(cep));
+            exibirResultado(cache.get(cep));
+            buscandoCep = false;
+            return;
         }
 
         try {
             resultadoDiv.innerHTML = `<p class="loading">Buscando informações...</p>`;
-            const response = await fetch(`/consultar/${cep}`);
+            
+            const response = await fetch(`/consultar/${encodeURIComponent(cep)}`, {
+                method: "GET",
+                headers: {
+                    "Accept": "application/json",
+                }
+            });
+
+            if (!response.ok) throw new Error("Erro ao consultar o CEP.");
+            
             const data = await response.json();
 
             if (data.error) {
-                resultadoDiv.innerHTML = `<p class="error-msg">${data.error}</p>`;
+                resultadoDiv.textContent = data.error;
+                resultadoDiv.classList.add(error-msg);
             } else {
                 cache.set(cep, data);
                 exibirResultado(data);
             }
         } catch (error) {
-            resultadoDiv.innerHTML = `<p class="error-msg">Erro ao consultar o CEP. Tente novamente mais tarde.</p>`;
+            resultadoDiv.textContent = "Erro ao consultar o CEP. Tente novamente mais tarde.";
+            resultadoDiv.classList.add("error-msg");
+        } finally {
+            buscandoCep = false;
         }
     });
 
@@ -39,14 +62,27 @@ document.addEventListener("DOMContentLoaded", () => {
         const enderecoCompleto = `${data.logradouro || ""}, ${data.bairro || ""}, ${data.localidade || ""}, ${data.uf || ""}`;
         const googleMapsLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(enderecoCompleto)}`;
 
-        resultadoDiv.innerHTML = `
-            <p><strong>CEP:</strong> ${data.cep}</p>
-            <p><strong>Logradouro:</strong> ${data.logradouro || "Não disponível"}</p>
-            <p><strong>Bairro:</strong> ${data.bairro || "Não disponível"}</p>
-            <p><strong>Cidade:</strong> ${data.localidade}</p>
-            <p><strong>Estado:</strong> ${data.uf}</p>
-            <a href="${googleMapsLink}" target="_blank" class="btn-maps">Abrir no Google Maps</a>
+        resultadoDiv.innerHTML = "";
+
+        const resultadoHTML = document.createElement("div");
+
+        resultadoHTML.innerHTML = `
+            <p><strong>CEP:</strong> <span>${escapeHTML(data.cep)}</span></p>
+            <p><strong>Logradouro:</strong> <span>${escapeHTML(data.logradouro || "Não disponível")}</span></p>
+            <p><strong>Bairro:</strong> <span>${escapeHTML(data.bairro || "Não disponível")}</span></p>
+            <p><strong>Cidade:</strong> <span>${escapeHTML(data.localidade)}</span></p>
+            <p><strong>Estado:</strong> <span>${escapeHTML(data.uf)}</span></p>
+            <a href="${googleMapsLink}" target="_blank" rel="noopener noreferrer" class="btn-maps">Abrir no Google Maps</a>
         `;
+        
+        resultadoDiv.appendChild(resultadoHTML);
+    }
+
+    function escapeHTML(str) {
+        return str.replace(/[&<>"']/g, function(match) {
+            const escapeChars = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+            return escapeChars[match];
+        });
     }
 });
   
