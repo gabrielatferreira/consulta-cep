@@ -19,6 +19,7 @@
     "node-cache": "^5.1.2",
     "node-fetch": "^3.3.2",
     "nodemon": "^3.0.1",
+    "openssl": "^2.0.0",
     "xss-clean": "^0.1.4"
   }
 }

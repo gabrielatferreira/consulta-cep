@@ -38,20 +38,20 @@ document.addEventListener("DOMContentLoaded", () => {
                     "Accept": "application/json",
                 }
             });
-
+            
             if (!response.ok) throw new Error("Erro ao consultar o CEP.");
             
             const data = await response.json();
-
+            
             if (data.error) {
                 resultadoDiv.textContent = data.error;
-                resultadoDiv.classList.add(error-msg);
+                resultadoDiv.classList.add("error-msg");
             } else {
                 cache.set(cep, data);
                 exibirResultado(data);
             }
         } catch (error) {
-            resultadoDiv.textContent = "Erro ao consultar o CEP. Tente novamente mais tarde.";
+            resultadoDiv.textContent = "Erro ao consultar o CEP.";
             resultadoDiv.classList.add("error-msg");
         } finally {
             buscandoCep = false;

@@ -7,6 +7,8 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import xss from "xss-clean";
 import { param, validationResult } from "express-validator";
+import https from "https";
+import { readFileSync } from "fs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -63,6 +65,12 @@ app.get("/consultar/:cep", param("cep").isLength({ min: 8, max: 8 }).isNumeric()
   }
 );
 
-app.listen(PORT, () => {
+https.createServer(
+  {
+    key: readFileSync('server.key'),
+    cert: readFileSync('server.crt')
+  },
+  app
+).listen(PORT, () => {
   console.log(`Servidor rodando em http://localhost:${PORT}`);
 });
